@@ -1,5 +1,5 @@
 name: rclone
-version: 1.0.1
+version: 1.0.2
 publish_to: https://onepub.dev/api/jbbxpsdavu/
 description: A rclone command-line application created by dcli
 repository: https://github.com/bsutton/rclone_service
@@ -11,3 +11,5 @@ dependencies:
   posix: ^4.0.0
 dev_dependencies: 
   lint_hard: ^1.0.0
+executables: 
+  rclone_service: 
