@@ -1,0 +1,12 @@
+name: rclone
+version: 1.0.0
+description: A rclone command-line application created by dcli
+respository: https://github.com/bsutton/rclone_service
+environment: 
+  sdk: '>=2.16.0 <3.0.0'
+dependencies: 
+  args: ^2.3.1
+  dcli: ^1.33.0
+  posix: ^4.0.0
+dev_dependencies: 
+  lint_hard: ^1.0.0
