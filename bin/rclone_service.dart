@@ -9,7 +9,9 @@
 import 'package:args/command_runner.dart';
 import 'package:dcli/dcli.dart';
 import 'package:rclone/src/commands/install.dart';
+import 'package:rclone/src/commands/list.dart';
 import 'package:rclone/src/commands/start.dart';
+import 'package:rclone/src/commands/status.dart';
 import 'package:rclone/src/commands/stop.dart';
 import 'package:rclone/src/exit_exception.dart';
 
@@ -26,7 +28,9 @@ void main(List<String> args) async {
       'rclone_service', 'Install and Start rclone as a service.')
     ..addCommand(StartCommand())
     ..addCommand(StopCommand())
-    ..addCommand(InstallCommand());
+    ..addCommand(InstallCommand())
+    ..addCommand(StatusCommand())
+    ..addCommand(ListCommand());
 
   try {
     await parser.run(args);
