@@ -1,3 +1,6 @@
+# 1.0.3
+- Added a list and status command.
+
 # 1.0.2
 added executable to pubspec.
 
