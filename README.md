@@ -1,10 +1,11 @@
 A script for managing an rclone service on ubuntu.
 
-Install rclone as a service and provides commands to start/stop rclone.
+Installs rclone as a service and provides commands to start/stop rclone.
 
 Firstly install rclone and create a remote.
 
 Once installed run:
+
 
 rclone_service install <remote name> <local mount point>
 

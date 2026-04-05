@@ -24,8 +24,8 @@ class StartArgs {
     if (results.rest.length != 1) {
       throw ExitException(
           1,
-          'The start command expects one arguments, '
-          'found: ${results.rest.length}');
+          'The start command expects an rclone remote name as an argument. '
+          'Found: ${results.rest.length}');
     }
     remoteName = results.rest[0];
   }

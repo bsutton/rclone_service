@@ -14,7 +14,20 @@ class InstallCommand extends Command<int> {
   String get description => '''
 Install rclone as a service.
 
-install <remote> <local mount point>''';
+rclone_service install <remote> <path to local mount point>
+''';
+
+//   @override
+//   String get usage => '''
+// $description
+// ${super.summary}
+
+// install <remote> <local mount point>
+
+// ${super.printUsage()}
+
+// ${super.usage}
+// ''';
 
   @override
   String get name => 'install';
@@ -38,7 +51,8 @@ install <remote> <local mount point>''';
     Shell.current.withPrivileges(() {
       // cause our new service to be loaded.
       'systemctl --machine=$user@.host --user daemon-reload'.run;
-      'systemctl --machine=$user@.host --user enable rclone@GDrive'.run;
+      'systemctl --machine=$user@.host --user enable rclone@${args.remoteName}'
+          .run;
     });
 
     return 0;
@@ -46,8 +60,8 @@ install <remote> <local mount point>''';
 }
 
 void createMountPoint(InstallArgs args) {
-  if (!exists(args.localPathToRemote)) {
-    createDir(args.localPathToRemote, recursive: true);
+  if (!exists(args.pathToMountPoint)) {
+    createDir(args.pathToMountPoint, recursive: true);
   }
 }
 
@@ -86,11 +100,13 @@ class InstallArgs {
           'found: ${results.rest.length}');
     }
     remoteName = results.rest[0];
-    localPathToRemote = results.rest[1];
+    pathToMountPoint = results.rest[1];
 
     Settings().setVerbose(enabled: results['verbose'] as bool);
   }
 
   late final String remoteName;
-  late final String localPathToRemote;
+
+  /// The path on our local file system the drive is to appear at.
+  late final String pathToMountPoint;
 }

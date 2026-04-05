@@ -18,13 +18,12 @@ void createServiceFile(InstallArgs args) {
 
   if (!exists(pathToServiceFile)) {
     pathToServiceFile.write(getContent(
-        remoteName: args.remoteName,
-        localPathToRemote: args.localPathToRemote));
+        remoteName: args.remoteName, pathToMountPoint: args.pathToMountPoint));
   }
 }
 
 String getContent(
-        {required String remoteName, required String localPathToRemote}) =>
+        {required String remoteName, required String pathToMountPoint}) =>
     '''
 # User service for Rclone mounting
 #
@@ -33,15 +32,15 @@ String getContent(
 # As your normal user, run 
 #   systemctl --user daemon-reload
 # You can now start/enable each remote by using rclone@<remote>
-#   systemctl --user enable rclone@dropbox
-#   systemctl --user start rclone@dropbox
+#   systemctl --user enable rclone@$remoteName
+#   systemctl --user start rclone@$remoteName
 
 [Unit]
 Description=rclone: Remote FUSE filesystem for cloud storage config $remoteName
 Documentation=man:rclone(1)
 After=network-online.target
 Wants=network-online.target 
-AssertPathIsDirectory=$localPathToRemote
+AssertPathIsDirectory=$pathToMountPoint
 
 [Service]
 Type=notify
@@ -54,8 +53,8 @@ ExecStart= \\
     --log-file /tmp/rclone-$remoteName.log \\
     --umask 022 \\
     --allow-other \\
-    $remoteName: $localPathToRemote
-ExecStop=/bin/fusermount -u $localPathToRemote
+    $remoteName: $pathToMountPoint
+ExecStop=/bin/fusermount -u $pathToMountPoint
 
 [Install]
 WantedBy=default.target
