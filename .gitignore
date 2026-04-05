@@ -1,3 +1,4 @@
 .failed_tracker
 .history
 .dart_tool/**
+.mcp_logs/mcp_command_server.log
