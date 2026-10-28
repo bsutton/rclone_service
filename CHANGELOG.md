@@ -20,6 +20,8 @@
   send logs to the journal instead of predictable `/tmp` files.
 - Add pure regression checks for argument validation, systemctl argv, unit
   identity, conflicting configuration and generated service defaults.
+- Update the locked transitive `archive` dependency to patched 3.4.2 (and its
+  required `pointycastle` version) to address two high-severity alerts.
 
 Migration is explicit: existing `rclone@.service` templates and their instances
 are never used, changed or deleted by this version. Before installing a new
