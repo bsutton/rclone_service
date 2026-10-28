@@ -37,9 +37,9 @@ stop legacy services. Installation enables the new service but does not start it
 Source scope: tag `1.0.3` already contained unsafe service-content interpolation,
 start/stop/status remote interpolation, shared-template reuse and permissive
 FUSE defaults. Commit `8a0a776` after that tag additionally changed privileged
-install enablement from hardcoded `GDrive` to the supplied remote. The privately
-published 1.0.3 artifact has not been inspected; HEAD-only behavior is not
-attributed to that artifact.
+install enablement from hardcoded `GDrive` to the supplied remote. The fetched
+OnePub 1.0.3 library files match tag `1.0.3`, so the privileged install-name
+interpolation is not attributed to that published version.
 
 # 1.0.3
 - Added a list and status command.
