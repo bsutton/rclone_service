@@ -1,7 +1,9 @@
+import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
-import 'package:dcli/dcli.dart';
 
 import '../exit_exception.dart';
+import '../service_identity.dart';
+import '../systemctl.dart';
 
 class StatusCommand extends Command<int> {
   @override
@@ -14,8 +16,7 @@ class StatusCommand extends Command<int> {
   int run() {
     final args = StatusArgs.from(argResults!);
 
-    'systemctl --user status rclone@${args.remoteName}'.run;
-    return 0;
+    return runSystemctl('status', remote: args.remoteName);
   }
 }
 
@@ -27,12 +28,7 @@ class StatusArgs {
           'The status command expects a Remote name as a single argument, '
           'found: ${results.rest.length}');
     }
-    var _remoteName = results.rest[0];
-
-    if (_remoteName.endsWith(':')) {
-      _remoteName = _remoteName.substring(0, _remoteName.length - 1);
-    }
-    remoteName = _remoteName;
+    remoteName = validateRemote(results.rest[0]);
   }
 
   late final String remoteName;

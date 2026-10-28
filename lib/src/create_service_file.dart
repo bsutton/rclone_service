@@ -1,61 +1,62 @@
+import 'dart:io';
+
 import 'package:dcli/dcli.dart';
+import 'package:posix/posix.dart';
 
 import 'commands/install.dart';
+import 'exit_exception.dart';
+import 'service_identity.dart';
 
 void createServiceFile(InstallArgs args) {
-  final pathToServiceFile =
-      join(HOME, '.config', 'systemd', 'user', 'rclone@.service');
-
-  final dirpath = dirname(pathToServiceFile);
-  if (!exists(dirpath)) {
-    createDir(dirpath, recursive: true);
+  final content = getContent(
+      remoteName: args.remoteName, pathToMountPoint: args.pathToMountPoint);
+  final file =
+      File(serviceFilePath(getpwuid(geteuid()).homePathTo, args.remoteName));
+  final type = FileSystemEntity.typeSync(file.path, followLinks: false);
+  if (type != FileSystemEntityType.notFound) {
+    if (type == FileSystemEntityType.file &&
+        existingServiceMatches(file.readAsStringSync(), content)) {
+      return;
+    }
+    throw ExitException(
+        1,
+        'Service file already exists with different content: ${file.path}. '
+        'Review and move it aside manually before reinstalling.');
   }
-
-  final pathToRemote = join(HOME, args.remoteName);
-  if (!exists(pathToRemote)) {
-    createDir(pathToRemote, recursive: true);
-  }
-
-  if (!exists(pathToServiceFile)) {
-    pathToServiceFile.write(getContent(
-        remoteName: args.remoteName, pathToMountPoint: args.pathToMountPoint));
-  }
+  file.parent.createSync(recursive: true);
+  file.writeAsStringSync(content, flush: true);
 }
 
-String getContent(
-        {required String remoteName, required String pathToMountPoint}) =>
-    '''
-# User service for Rclone mounting
-#
-# Place in ~/.config/systemd/user/
-# File must include the '@' (ex rclone@.service)
-# As your normal user, run 
-#   systemctl --user daemon-reload
-# You can now start/enable each remote by using rclone@<remote>
-#   systemctl --user enable rclone@$remoteName
-#   systemctl --user start rclone@$remoteName
+/// Builds the unit path from the effective user's passwd home, not HOME.
+String serviceFilePath(String passwdHome, String remote) =>
+    join(passwdHome, '.config', 'systemd', 'user', serviceName(remote));
 
+/// An existing instance may only be reused for an identical configuration.
+bool existingServiceMatches(String existing, String requested) =>
+    existing == requested;
+
+String getContent(
+    {required String remoteName, required String pathToMountPoint}) {
+  final remote = validateRemote(remoteName);
+  final mount = validateMountPath(pathToMountPoint);
+  return '''
+# Managed by rclone_service; one remote and mount per service file.
 [Unit]
-Description=rclone: Remote FUSE filesystem for cloud storage config $remoteName
+Description=rclone remote $remote
 Documentation=man:rclone(1)
 After=network-online.target
-Wants=network-online.target 
-AssertPathIsDirectory=$pathToMountPoint
+Wants=network-online.target
+AssertPathIsDirectory=$mount
 
 [Service]
 Type=notify
-ExecStart= \\
-  /usr/bin/rclone mount \\
-    --config=%h/.config/rclone/rclone.conf \\
-    --vfs-cache-mode writes \\
-    --vfs-cache-max-size 100M \\
-    --log-level INFO \\
-    --log-file /tmp/rclone-$remoteName.log \\
-    --umask 022 \\
-    --allow-other \\
-    $remoteName: $pathToMountPoint
-ExecStop=/bin/fusermount -u $pathToMountPoint
+UMask=0077
+ExecStart=/usr/bin/rclone mount --config=%h/.config/rclone/rclone.conf --vfs-cache-mode writes --vfs-cache-max-size 100M --log-level INFO --umask 077 $remote: $mount
+ExecStop=/bin/fusermount -u $mount
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=default.target
 ''';
+}

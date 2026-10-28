@@ -6,6 +6,8 @@
 /// Based on:
 /// https://gist.github.com/kabili207/2cd2d637e5c7617411a666d8d7e97101
 ///
+import 'dart:io';
+
 import 'package:args/command_runner.dart';
 import 'package:dcli/dcli.dart';
 import 'package:rclone/src/commands/install.dart';
@@ -33,14 +35,22 @@ void main(List<String> args) async {
     ..addCommand(ListCommand());
 
   try {
-    await parser.run(args);
+    exitCode = await parser.run(args) ?? 0;
   } on FormatException catch (e) {
+    exitCode = 64;
     printerr(red('Invalid args: ${e.message}'));
     printUsage(parser);
   } on ExitException catch (e) {
+    exitCode = e.exitCode;
     printerr(red(e.message));
 
     printUsage(parser);
+  } on ProcessException catch (e) {
+    exitCode = 1;
+    printerr(red('Could not execute ${e.executable}: ${e.message}'));
+  } on FileSystemException catch (e) {
+    exitCode = 1;
+    printerr(red(e.toString()));
   }
 }
 

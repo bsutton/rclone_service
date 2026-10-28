@@ -1,7 +1,9 @@
+import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
-import 'package:dcli/dcli.dart';
 
 import '../exit_exception.dart';
+import '../service_identity.dart';
+import '../systemctl.dart';
 
 class StartCommand extends Command<int> {
   @override
@@ -14,8 +16,7 @@ class StartCommand extends Command<int> {
   int run() {
     final args = StartArgs.from(argResults!);
 
-    'systemctl --user start rclone@${args.remoteName}'.run;
-    return 0;
+    return runSystemctl('start', remote: args.remoteName);
   }
 }
 
@@ -27,7 +28,7 @@ class StartArgs {
           'The start command expects an rclone remote name as an argument. '
           'Found: ${results.rest.length}');
     }
-    remoteName = results.rest[0];
+    remoteName = validateRemote(results.rest[0]);
   }
 
   late final String remoteName;
